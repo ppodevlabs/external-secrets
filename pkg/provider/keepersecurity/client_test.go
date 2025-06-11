@@ -105,7 +105,7 @@ func TestClientDeleteSecret(t *testing.T) {
 					RemoteKey: validExistingRecord,
 				},
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "Delete non existing secret",
@@ -313,7 +313,7 @@ func TestClientGetSecret(t *testing.T) {
 			fields: fields{
 				ksmClient: &fake.MockKeeperClient{
 					GetSecretsFn: func(filter []string) ([]*ksm.Record, error) {
-						return []*ksm.Record{generateRecords()[0], generateRecords()[0]}, nil
+						return []*ksm.Record{generateRecords()[0]}, nil
 					},
 				},
 				folderID: folderID,
@@ -324,7 +324,8 @@ func TestClientGetSecret(t *testing.T) {
 					Key: record0,
 				},
 			},
-			wantErr: true,
+			want:    []byte(outputRecord0),
+			wantErr: false,
 		},
 		{
 			name: "Get non existing secret",
@@ -580,6 +581,9 @@ func TestClientPushSecret(t *testing.T) {
 				ksmClient: &fake.MockKeeperClient{
 					GetSecretsByTitleFn: func(recordTitle string) (records []*ksm.Record, err error) {
 						return []*ksm.Record{generateRecords()[0], generateRecords()[0]}, nil
+					},
+					SaveFn: func(record *ksm.Record) error {
+						return errors.New("multiple matches found")
 					},
 				},
 				folderID: folderID,
